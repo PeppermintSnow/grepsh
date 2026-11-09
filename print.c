@@ -48,4 +48,6 @@ void print_source_trace(const char *source_buf, const struct token *tokens,
             line_start = &source_buf[i + 1];
         }
     }
+
+    printf("==================================================\n");
 }
