@@ -5,7 +5,8 @@ token_t token_make(lexer_t *l, token_type_t t) {
     return (struct token) {
         .start = l->start,
         .type = t,
-        .len = l->current - l->start
+        .len = l->current - l->start,
+        .line = l->line
     };
 }
 

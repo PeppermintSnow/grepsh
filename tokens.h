@@ -113,6 +113,7 @@ typedef struct token {
     token_type_t type;  // token type
     const char *start;  // ptr to starting pos of the token
     size_t len;         // token length
+    size_t line;        // origin line
 } token_t;
 
 token_t token_make(lexer_t *l, token_type_t t);

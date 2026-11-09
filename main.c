@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "lexer.h"
+#include "print.h"
 #include "tokens.h"
 
 int main(int argc, char *argv[]) {
@@ -37,17 +38,25 @@ int main(int argc, char *argv[]) {
     struct lexer l;
     lexer_init(&l, buf);
 
-    struct token t;
-    while (t.type != TOKEN_EOF) {
-        t = token_next(&l);       
-        printf("Line %zu [%zu byte%s]: %s\n", 
-            l.line, 
-            t.len, 
-            t.len > 1 ? "s" : "",
-            token_to_str(t.type)
-        );
-    }
+    size_t token_cap = 128;
+    size_t token_idx = 0;
+    struct token *tokens = malloc(token_cap * sizeof(struct token));
 
+    struct token t;
+    do {
+        t = token_next(&l);       
+        if (token_idx >= token_cap) {
+            token_cap *= 2;
+            tokens = realloc(tokens, token_cap * sizeof(struct token));
+        }
+        tokens[token_idx] = t;
+        token_idx += 1;
+    } while (t.type != TOKEN_EOF);
+
+    print_source_trace(buf, tokens, token_idx);
+
+    free(tokens);
     free(buf);
+
     return EXIT_SUCCESS;
 }
