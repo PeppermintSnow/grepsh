@@ -16,11 +16,17 @@ typedef enum token_type {
     TOKEN_FLOAT,
     TOKEN_CHAR,
     TOKEN_STRING,
-    TOKEN_INTERPOLATED_STRING,
     TOKEN_REGEX,
     TOKEN_BOOL,
     TOKEN_ARRAY,
     TOKEN_MAP,
+
+    // literals
+    TOKEN_INT_LITERAL,
+    TOKEN_FLOAT_LITERAL,
+    TOKEN_STRING_LITERAL,
+    TOKEN_INTERPOLATED_STRING,
+    TOKEN_REGEX_LITERAL,
 
     // assignment operators
     TOKEN_ASSIGN,
@@ -95,6 +101,9 @@ typedef enum token_type {
     TOKEN_RBRACKET,
     TOKEN_LPAREN,
     TOKEN_RPAREN,
+
+    // error/eof
+    TOKEN_ERROR,
     TOKEN_EOF
 } token_type_t;
 
@@ -105,4 +114,5 @@ typedef struct token {
 } token_t;
 
 const char *token_to_str(const token_type_t t);
+
 #endif

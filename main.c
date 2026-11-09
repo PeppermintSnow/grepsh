@@ -31,6 +31,9 @@ token_t token_next(lexer_t *l) {
         } else if (c == '\n') {
             l->line += 1;
             lexer_consume(l);
+        } else if (c == '#') {
+            while (lexer_peek(l) != '\n' && lexer_peek(l) != '\0') 
+                lexer_consume(l);
         } else {
             break;
         }
@@ -43,7 +46,10 @@ token_t token_next(lexer_t *l) {
     switch (c) {
         case ';': return token_make(l, TOKEN_SEMICOLON);
         case '=':
-            if (lexer_peek(l) != ' ') {
+            if (lexer_peek(l) == '=' ||
+                lexer_peek(l) == '>' ||
+                lexer_peek(l) == '~'
+            ) {
                 c = lexer_consume(l);
                 switch (c) {
                     case '=': return token_make(l, TOKEN_EQ);
@@ -75,7 +81,7 @@ token_t token_next(lexer_t *l) {
                 case '%': return token_make(l, TOKEN_MOD);
             }
         case '!':
-            if (lexer_peek(l) != ' ') {
+            if (lexer_peek(l) != '=' || lexer_peek(l) == '~') {
                 c = lexer_consume(l);
                 switch (c) {
                     case '=': return token_make(l, TOKEN_NEQ);
@@ -111,6 +117,41 @@ token_t token_next(lexer_t *l) {
                 return token_make(l, TOKEN_MODULE_ACCESSOR);
             }
             return token_make(l, TOKEN_COLON);
+    }
+
+    // char
+    if (c == '\'') {
+        while (lexer_peek(l) != '\'') lexer_consume(l);
+        lexer_consume(l);
+        return token_make(l, TOKEN_CHAR);
+    }
+
+    // string
+    if (c == '"') {
+        while (lexer_peek(l) != '"' && lexer_peek(l) != '\0') lexer_consume(l);
+        lexer_consume(l);
+        return token_make(l, TOKEN_STRING_LITERAL);
+    }
+
+    // interpolated string/regex
+    if ((c == 'f' || c == 'r') && lexer_peek(l) == '"') {
+        lexer_consume(l);
+        while (lexer_peek(l) != '"' && lexer_peek(l) != '\0') lexer_consume(l);
+        lexer_consume(l);
+        token_type_t t = c == 'f' ? TOKEN_INTERPOLATED_STRING : TOKEN_REGEX_LITERAL;
+        return token_make(l, t);
+    }
+
+    if (c >= '0' && c <= '9') {
+        while (lexer_peek(l) >= '0' && lexer_peek(l) <= '9') lexer_consume(l);
+
+        if (lexer_peek(l) == '.' ) {
+            lexer_consume(l);
+            while (lexer_peek(l) >= '0' && lexer_peek(l) <= '9') lexer_consume(l);
+            return token_make(l, TOKEN_FLOAT_LITERAL);
+        }
+
+        return token_make(l, TOKEN_INT_LITERAL);
     }
 
     // identifiers/keywords
@@ -163,32 +204,41 @@ token_t token_next(lexer_t *l) {
         return token_make(l, TOKEN_IDENTIFIER);
     }
 
-    // char
-    if (c == '\'') {
-        while (lexer_peek(l) != '\'') lexer_consume(l);
-        lexer_consume(l);
-        return token_make(l, TOKEN_CHAR);
-    }
-
-    // string/interpolated string/regex
-    if (c == '"' || c == 'f' || c == 'r') {
-        while (lexer_peek(l) != '"') lexer_consume(l);
-        lexer_consume(l);
-        switch (c) {
-            case '"': return token_make(l, TOKEN_STRING);
-            case 'f': return token_make(l, TOKEN_INTERPOLATED_STRING);
-            case 'r': return token_make(l, TOKEN_REGEX);
-        }
-    }
-
     return token_make(l, TOKEN_EOF);
 }
 
-int main() {
-    const char *src = "let text = \"hello\";\nprint(text);";
+int main(int argc, char *argv[]) {
+    if (argc < 1) {
+        perror("missing path to grepsh source code");
+        return EXIT_FAILURE;
+    }
+
+    FILE *file = fopen(argv[1], "rb");
+    if (file == NULL) {
+        perror("error opening file");
+        return EXIT_FAILURE;
+    }
+
+    fseek(file, 0, SEEK_END);
+    size_t fsize = ftell(file);
+    rewind(file);
+
+    char *buf = malloc(fsize + 1);
+    if (buf == NULL) {
+        perror("malloc failed");
+        fclose(file);
+        return EXIT_FAILURE;
+    }
+
+    size_t bytes_read = fread(buf, 1, fsize, file);
+    if (bytes_read < fsize)
+        if (ferror(file))
+            perror("error reading file");
+    buf[bytes_read] = '\0';
+    fclose(file);
 
     struct lexer l;
-    lexer_init(&l, src);
+    lexer_init(&l, buf);
 
     struct token t;
     while (t.type != TOKEN_EOF) {
@@ -201,5 +251,6 @@ int main() {
         );
     }
 
-
+    free(buf);
+    return EXIT_SUCCESS;
 }

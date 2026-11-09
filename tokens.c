@@ -14,11 +14,17 @@ const char *token_to_str(const token_type_t t) {
         case TOKEN_FLOAT: return "FLOAT";
         case TOKEN_CHAR: return "CHAR";
         case TOKEN_STRING: return "STRING";
-        case TOKEN_INTERPOLATED_STRING: return "INTERPOLATED_STRING";
         case TOKEN_REGEX: return "REGEX";
         case TOKEN_BOOL: return "BOOL";
         case TOKEN_ARRAY: return "ARRAY";
         case TOKEN_MAP: return "MAP";
+
+        // literals
+        case TOKEN_INT_LITERAL: return "INT_LITERAL";
+        case TOKEN_FLOAT_LITERAL: return "FLOAT_LITERAL";
+        case TOKEN_STRING_LITERAL: return "STRING_LITERAL";
+        case TOKEN_INTERPOLATED_STRING: return "INTERPOLATED_STRING";
+        case TOKEN_REGEX_LITERAL: return "REGEX_LITERAL";
 
         // assignment operators
         case TOKEN_ASSIGN: return "ASSIGN";
@@ -93,6 +99,9 @@ const char *token_to_str(const token_type_t t) {
         case TOKEN_RBRACKET: return "RBRACKET";
         case TOKEN_LPAREN: return "LPAREN";
         case TOKEN_RPAREN: return "RPAREN";
+
+        // error/eof
+        case TOKEN_ERROR: return "ERROR";
         case TOKEN_EOF: return "EOF";
     }
 }
