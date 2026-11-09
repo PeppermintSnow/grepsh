@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+#include "lexer.h"
+
 typedef enum token_type {
     // declarators
     TOKEN_LET,
@@ -112,6 +114,10 @@ typedef struct token {
     const char *start;  // ptr to starting pos of the token
     size_t len;         // token length
 } token_t;
+
+token_t token_make(lexer_t *l, token_type_t t);
+
+token_t token_next(lexer_t *l);
 
 const char *token_to_str(const token_type_t t);
 

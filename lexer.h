@@ -11,4 +11,8 @@ typedef struct lexer {
 
 void lexer_init(lexer_t *l, const char *src);
 
+const char lexer_consume(lexer_t *l);
+
+const char lexer_peek(lexer_t *l);
+
 #endif
